@@ -3,15 +3,12 @@ VIDEO PROCESSING INTERVIEW QUESTION - APPROACH GUIDE
 =====================================================
 
 PROBLEM STATEMENT (What we know):
-✓ We are GIVEN a list of videos upfront
-✓ We DON'T know the lengths initially - must call video.get_length() for each
-✓ We have a TIME BUDGET (e.g., 10 minutes total processing time)
-✓ GOAL: Maximize the NUMBER (count) of videos we process
-✓ Assumption: processing_time = video_length
+We are GIVEN a list of videos upfront
+We DON'T know the lengths initially - must call video.get_length() for each
+We have a TIME BUDGET (e.g., 10 minutes total processing time)
+GOAL: Maximize the NUMBER (count) of videos we process
+Assumption: processing_time = video_length
 
-=====================================================
-STEP 1: CLARIFYING QUESTIONS
-=====================================================
 
 Even with the above, you should still ask:
 
@@ -23,9 +20,6 @@ Even with the above, you should still ask:
 
 4. "Do all videos have equal priority?" -> no priority
 
-=====================================================
-STEP 2: EXPLAIN YOUR APPROACH
-=====================================================
 
 "To maximize the COUNT of videos processed with limited time, I should use a 
 GREEDY ALGORITHM: process the SHORTEST videos first.
@@ -37,10 +31,6 @@ Why? If I have 10 minutes:
 By processing shorter videos first, I fit more videos into my time budget."
 
 This is similar to the Activity Selection Problem.
-
-=====================================================
-STEP 3: OUTLINE THE ALGORITHM
-=====================================================
 
 Pseudo-code:
 
@@ -58,10 +48,6 @@ Pseudo-code:
 
 Time Complexity: O(n log n) - dominated by sorting
 Space Complexity: O(n) - storing video-length pairs
-
-=====================================================
-STEP 4: NOW LET'S CODE IT! (10-12 minutes)
-=====================================================
 """
 
 class Video:
