@@ -97,6 +97,74 @@ class VideoProcessor:
         
         return processed_videos
 
+    def select_videos_for_parallel(self, videos, workers):
+        """Select a subset of videos to run in parallel on `workers` machines
+        within the same `time_budget` window.
+
+        This uses a greedy heuristic: sort by shortest length, then assign
+        each video to the machine with the smallest current load (min-heap).
+        If assigning a video would exceed `time_budget` on that machine,
+        the video is skipped.
+        """
+        import heapq
+
+        # Create (video, length) pairs and sort ascending by length
+        pairs = [(v, v.get_length()) for v in videos]
+        pairs.sort(key=lambda x: x[1])
+
+        # Min-heap of (current_load, worker_id)
+        heap = [(0, i) for i in range(workers)]
+        heapq.heapify(heap)
+
+        assigned = []
+        # For each shortest-first, try assign to least-loaded worker
+        for video, length in pairs:
+            load, wid = heapq.heappop(heap)
+            if load + length <= self.time_budget:
+                # assign
+                assigned.append(video)
+                heapq.heappush(heap, (load + length, wid))
+            else:
+                # can't fit on least-loaded machine -> skip
+                heapq.heappush(heap, (load, wid))
+
+        return assigned
+
+    def process_videos_parallel(self, videos, workers=2, simulate=True, scale=0.1):
+        """Schedule (via `select_videos_for_parallel`) then run selected
+        videos concurrently using `workers` threads.
+
+        - `simulate`: if True, sleeps for `length * scale` seconds to
+          emulate work; otherwise calls `video.process()` immediately.
+        - `scale` lets you avoid long sleeps when lengths are in minutes.
+        """
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        import time
+
+        selected = self.select_videos_for_parallel(videos, workers)
+
+        start = time.perf_counter()
+        results = []
+
+        def _run(video):
+            length = video.get_length()
+            if simulate:
+                print(f"Starting {video.video_id} (len {length})")
+                time.sleep(length * scale)
+                end = time.perf_counter()
+                print(f"Finished {video.video_id} after {end - start:.2f}s")
+            else:
+                video.process()
+            return video
+
+        with ThreadPoolExecutor(max_workers=workers) as exe:
+            futures = [exe.submit(_run, v) for v in selected]
+            for f in as_completed(futures):
+                results.append(f.result())
+
+        total_used = sum(v.get_length() for v in results)
+        return results, total_used
+
 
 if __name__ == "__main__":
 

@@ -12,6 +12,11 @@ Space complexity: O(max(m,n)) -> we are storing a dummy node and storing basical
 """
 
 
+class ListNode:
+    def __init__(self, val, next=None):
+        self.val = val
+        self.next = next
+
 class Solution:
     def addTwoNumbers(self, l1: Optional[ListNode], l2: Optional[ListNode]) -> Optional[ListNode]:
         curr_node = result = ListNode(0, None)
